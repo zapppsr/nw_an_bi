@@ -1,0 +1,1 @@
+Como as fatos e dimensões foram criadas como tabelas virtuais em DAX na ferramenta de BI, disponibilizamos aqui os scripts em DAX que geram estas tabelas.
