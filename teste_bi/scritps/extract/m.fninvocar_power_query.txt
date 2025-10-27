@@ -1,0 +1,28 @@
+// (fx) fnInvocar (Função base padronizada para invocar arquivos individuais)
+
+(fileName as text) as table =>
+let
+    // URL Base dos arquivos no Github
+    basePath = "https://raw.githubusercontent.com/repositoriobi/testeAnalistaBI/main/an_bi/spreadsheets/",
+
+    // Concatenar URL com Parâmetro nome do Arquivo
+    SourceURL = basePath & fileName,
+
+    // Detectar colunas automaticamente
+    Fonte = Csv.Document(Web.Contents(SourceURL),
+        [Delimiter=";", Encoding=65001, QuoteStyle=QuoteStyle.None]), 
+
+    // Promoção de Cabeçalhos
+    #"Cabeçalhos Promovidos" = Table.PromoteHeaders(Fonte, [PromoteAllScalars=true])
+in
+    #"Cabeçalhos Promovidos"
+	
+// Aplicação da função para invocar as 7 tabelas individuais
+
+= fnInvocar("cotacoes_bolsa.csv")
+= fnInvocar("df_empresas.csv")
+= fnInvocar("empresas_bolsa.csv")
+= fnInvocar("empresas_nivel_atividade.csv")
+= fnInvocar("empresas_porte.csv")
+= fnInvocar("empresas_saude_tributaria.csv")
+= fnInvocar("empresas_simples.csv")
