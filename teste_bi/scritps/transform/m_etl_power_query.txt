@@ -1,0 +1,52 @@
+// raw_cotacoes_bolsa ===============================
+let
+    Fonte = fnInvocar("cotacoes_bolsa.csv"),
+    #"Valor Substituído" = Table.ReplaceValue(Fonte,".",",",Replacer.ReplaceText,{"vl_abertura", "vl_maximo", "vl_minimo", "vl_medio", "vl_fechamento", "vl_mlh_oft_compra", "vl_mlh_oft_venda", "vl_ttl_neg", "qt_tit_neg", "vl_volume", "vl_exec_opc"}),
+    #"Tipo Alterado" = Table.TransformColumnTypes(#"Valor Substituído",{{"vl_abertura", type number}, {"vl_maximo", type number}, {"vl_minimo", type number}, {"vl_medio", type number}, {"vl_fechamento", type number}, {"vl_mlh_oft_compra", type number}, {"vl_mlh_oft_venda", type number}, {"vl_ttl_neg", type number}, {"qt_tit_neg", type number}, {"vl_volume", type number}, {"vl_exec_opc", type number}, {"dt_pregao", Int64.Type}, {"dt_vnct_opc", Int64.Type}}),
+    #"Texto Aparado" = Table.TransformColumns(#"Tipo Alterado",{{"cd_acao_rdz", Text.Trim, type text}})
+in
+    #"Texto Aparado"
+	
+// raw_df_empresas ===============================
+let
+    Fonte = fnInvocar("df_empresas.csv"),
+    #"Tipo Alterado" = Table.TransformColumnTypes(Fonte,{{"dt_abertura", type date}}),
+    #"Valor Substituído" = Table.ReplaceValue(#"Tipo Alterado","true","Sim",Replacer.ReplaceText,{"matriz.empresaMatriz"}),
+    #"Valor Substituído1" = Table.ReplaceValue(#"Valor Substituído","false","Não",Replacer.ReplaceText,{"matriz.empresaMatriz"})
+in
+    #"Valor Substituído1"
+	
+//raw_empresas_bolsa ===============================
+let
+    Fonte = fnInvocar("empresas_bolsa.csv"),
+    #"Texto Aparado" = Table.TransformColumns(Fonte,{{"cd_acao_rdz", Text.Trim, type text}})
+in
+    #"Texto Aparado"
+
+// raw_empresas_nivel_atividade ===============================
+let
+    Fonte = fnInvocar("empresas_nivel_atividade.csv")
+in
+    Fonte
+
+// raw_empresas_porte ===============================
+let
+    Fonte = fnInvocar("empresas_porte.csv")
+in
+    Fonte
+	
+// raw_empresas_saude_tributaria ===============================
+let
+    Fonte = fnInvocar("empresas_saude_tributaria.csv")
+in
+    Fonte
+
+// raw_empresas_simples ===============================
+let
+    Fonte = fnInvocar("empresas_simples.csv"),
+    #"Valor Substituído" = Table.ReplaceValue(Fonte,"false","Não",Replacer.ReplaceText,{"optante_simples", "optante_simei"}),
+    #"Valor Substituído1" = Table.ReplaceValue(#"Valor Substituído","true","Sim",Replacer.ReplaceText,{"optante_simples", "optante_simei"})
+in
+    #"Valor Substituído1"
+	
+	
