@@ -1,0 +1,1 @@
+Este arquivo contem as transformações adicionais que cada carga recebeu. Contem todas as tabelas de ETL do Power Query num único arquivo, separadas por comentários com o nome da tabela.
