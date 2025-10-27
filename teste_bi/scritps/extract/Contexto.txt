@@ -1,0 +1,1 @@
+Os sritpts contidos aqui são uma função custmizada do Power Query e chamadas individuais de cada tabela usando esta função.
