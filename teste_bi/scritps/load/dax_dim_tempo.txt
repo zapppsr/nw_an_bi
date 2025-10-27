@@ -1,0 +1,25 @@
+-- Tabela adicional gerada em DAX (Dimensão de tempo)
+
+dim_tempo = 
+VAR AnoMax = 2022
+VAR Extensao = 12
+VAR Calendario =
+    SELECTCOLUMNS (
+        CALENDAR ( DATE ( AnoMax - Extensao, 1, 1 ), DATE ( AnoMax, 12, 31 ) ),
+        "data", [Date]
+    )
+VAR Base =
+    ADDCOLUMNS (
+        Calendario,
+        "sk_tempo",
+            YEAR ( [data] ) & FORMAT ( MONTH ( [data] ), "00" )
+                & FORMAT ( DAY ( [data] ), "00" ),
+        "ano", YEAR ( [data] ),
+        "dia", DAY ( [data] ),
+        "nome_mes_abrev", FORMAT ( [data], "mmm" ),
+        "nome_mes", FORMAT ( [data], "mmmm" ),
+        "mes", MONTH ( [data] ),
+        "dt_competencia", YEAR ( [data] ) & FORMAT ( MONTH ( [data] ), "00" )
+    )
+RETURN
+    Base

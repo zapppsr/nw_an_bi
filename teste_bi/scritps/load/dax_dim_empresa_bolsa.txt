@@ -1,0 +1,138 @@
+-- Tabela refinada. Tratada em DAX com fonte raw gerada em Power Query
+
+
+dim_empresas_bolsa = 
+VAR PadraoTexto = "Não Disponível"
+VAR PadraoTextoShort = "ND"
+VAR PadraoData = BLANK() -- Mantemos BLANK para datas por padrão
+
+-- 1. PREPARAÇÃO DAS TABELAS (Sem tratamento de BLANK/Espaços, apenas conversão CNPJ)
+-- As colunas originais das 'raw_' não precisam de TRIM aqui,
+-- pois o TRIM deve ser aplicado ao resultado final do JOIN.
+
+VAR empresas_bolsa =
+    SELECTCOLUMNS (
+        raw_empresas_bolsa,
+        "cd_acao_rdz", raw_empresas_bolsa[cd_acao_rdz],
+        "nm_empresa", raw_empresas_bolsa[nm_empresa],
+        "nm_setor_economico", raw_empresas_bolsa[setor_economico],
+        "nm_subsetor", raw_empresas_bolsa[subsetor],
+        "nm_segmento", raw_empresas_bolsa[segmento],
+        "nm_segmento_b3", raw_empresas_bolsa[segmento_b3],
+        "cd_acao", raw_empresas_bolsa[cd_acao],
+        "cnpj", CONVERT(raw_empresas_bolsa[tx_cnpj_clean], STRING) 
+    )
+
+VAR df_empresas =
+    SELECTCOLUMNS(
+        raw_df_empresas,
+        "cnpj", CONVERT(raw_df_empresas[cnpj], STRING), 
+        "cd_cnae_principal", raw_df_empresas[cd_cnae_principal],
+        "de_cnae_principal", raw_df_empresas[de_cnae_principal],
+        "de_ramo_atividade", raw_df_empresas[de_ramo_atividade],
+        "de_setor", raw_df_empresas[de_setor],
+        "dt_abertura", raw_df_empresas[dt_abertura],
+        "ds_endereco_cep", raw_df_empresas[endereco_cep],
+        "ds_endereco_pais", "Brasil",
+        "ds_endereco_mesorregiao", raw_df_empresas[endereco_mesorregiao],
+        "ds_endereco_municipio", raw_df_empresas[endereco_municipio],
+        "ds_endereco_regiao", raw_df_empresas[endereco_regiao],
+        "ds_endereco_uf", raw_df_empresas[endereco_uf],
+        "fl_matriz_empresa", raw_df_empresas[matriz.empresaMatriz], 
+        "ds_situacao_cadastral", raw_df_empresas[situacao_cadastral]
+    )
+
+VAR nivel_atividade =
+    SELECTCOLUMNS(
+        raw_empresas_nivel_atividade,
+        "cnpj", CONVERT(raw_empresas_nivel_atividade[cnpj], STRING),
+        "ds_nivel_atividade", raw_empresas_nivel_atividade[nivel_atividade]
+    )
+
+VAR porte =
+    SELECTCOLUMNS(
+        raw_empresas_porte,
+        "cnpj", CONVERT(raw_empresas_porte[cnpj], STRING),
+        "ds_empresa_porte", raw_empresas_porte[empresa_porte]
+    )
+
+VAR saude_tributaria =
+    SELECTCOLUMNS(
+        raw_empresas_saude_tributaria,
+        "cnpj", CONVERT(raw_empresas_saude_tributaria[cnpj], STRING),
+        "ds_saude_tributaria", raw_empresas_saude_tributaria[saude_tributaria]
+    )
+
+VAR simples =
+    SELECTCOLUMNS(
+        raw_empresas_simples,
+        "cnpj", CONVERT(raw_empresas_simples[cnpj], STRING),
+        "fl_optante_simples", raw_empresas_simples[optante_simples],
+        "fl_optante_simei", raw_empresas_simples[optante_simei]
+    )
+
+-- 2. EXECUTAR OS JOINS
+VAR TabelaComJoins =
+    NATURALLEFTOUTERJOIN ( 
+        NATURALLEFTOUTERJOIN ( 
+            NATURALLEFTOUTERJOIN ( 
+                NATURALLEFTOUTERJOIN ( 
+                    NATURALLEFTOUTERJOIN ( 
+                        empresas_bolsa,
+                        df_empresas
+                    ),
+                    nivel_atividade
+                ),
+                porte
+            ),
+            saude_tributaria
+        ),
+        simples
+    )
+
+-- 3. TRATAR O RESULTADO FINAL (Substituindo BLANK, NULL e " " por "Não Disponível")
+RETURN
+    SELECTCOLUMNS(
+        TabelaComJoins,
+        
+        -- Colunas de empresas_bolsa (Estas deveriam ser tratadas no SELECTCOLUMNS inicial, 
+        -- mas vamos tratá-las aqui também para garantir a consistência caso haja BLANKs na raw_empresas_bolsa)
+        "cd_acao_rdz", IF(TRIM([cd_acao_rdz]) = "", PadraoTexto, [cd_acao_rdz]), 
+        "nm_empresa", IF(TRIM([nm_empresa]) = "", PadraoTexto, [nm_empresa]),
+        "cd_acao_chave","("&[cd_acao_rdz]&") "&[nm_empresa],
+        "nm_setor_economico", IF(TRIM([nm_setor_economico]) = "", PadraoTexto, [nm_setor_economico]),
+        "nm_subsetor", IF(TRIM([nm_subsetor]) = "", PadraoTexto, [nm_subsetor]),
+        "nm_segmento", IF(TRIM([nm_segmento]) = "", PadraoTexto, [nm_segmento]),
+        "nm_segmento_b3", IF(TRIM([nm_segmento_b3]) = "", PadraoTexto, [nm_segmento_b3]),
+        "cd_acao", IF(TRIM([cd_acao]) = "", PadraoTexto, [cd_acao]),
+        "cnpj_chave", IF(TRIM([cnpj]) = "", [cd_acao_rdz], [cnpj]),
+        "cnpj", [cnpj], -- Chave de join - não tratamos
+        
+        -- Colunas de df_empresas (Aplicando IF/TRIM, que trata BLANK, NULL e Espaços)
+        "cd_cnae_principal", IF(TRIM([cd_cnae_principal]) = "", PadraoTexto, [cd_cnae_principal]),
+        "de_cnae_principal", IF(TRIM([de_cnae_principal]) = "", PadraoTexto, [de_cnae_principal]),
+        "de_ramo_atividade", IF(TRIM([de_ramo_atividade]) = "", PadraoTexto, [de_ramo_atividade]),
+        "de_setor", IF(TRIM([de_setor]) = "", PadraoTexto, [de_setor]),
+        "dt_abertura", IF(ISBLANK([dt_abertura]), PadraoData, [dt_abertura]), -- Datas continuam com ISBLANK
+        "ds_endereco_cep", IF(TRIM([ds_endereco_cep]) = "", PadraoTexto, [ds_endereco_cep]),
+        "ds_endereco_pais", "Brasil",
+        "ds_endereco_mesorregiao", IF(TRIM([ds_endereco_mesorregiao]) = "", PadraoTexto, [ds_endereco_mesorregiao]),
+        "ds_endereco_municipio", IF(TRIM([ds_endereco_municipio]) = "", PadraoTexto, [ds_endereco_municipio]),
+        "ds_endereco_regiao", IF(TRIM([ds_endereco_regiao]) = "", PadraoTexto, [ds_endereco_regiao]),
+        "ds_endereco_uf", IF(TRIM([ds_endereco_uf]) = "", PadraoTextoShort, [ds_endereco_uf]),
+        "fl_matriz_empresa", IF(TRIM([fl_matriz_empresa]) = "", PadraoTexto, [fl_matriz_empresa]), 
+        "ds_situacao_cadastral", IF(TRIM([ds_situacao_cadastral]) = "", PadraoTexto, [ds_situacao_cadastral]),
+
+        -- Colunas de nivel_atividade
+        "ds_nivel_atividade", IF(TRIM([ds_nivel_atividade]) = "", PadraoTexto, [ds_nivel_atividade]),
+
+        -- Colunas de porte
+        "ds_empresa_porte", IF(TRIM([ds_empresa_porte]) = "", PadraoTexto, [ds_empresa_porte]),
+
+        -- Colunas de saude_tributaria
+        "ds_saude_tributaria", IF(TRIM([ds_saude_tributaria]) = "", PadraoTexto, [ds_saude_tributaria]),
+
+        -- Colunas de simples
+        "fl_optante_simples", IF(TRIM([fl_optante_simples]) = "", PadraoTexto, [fl_optante_simples]),
+        "fl_optante_simei", IF(TRIM([fl_optante_simei]) = "", PadraoTexto, [fl_optante_simei])
+    )

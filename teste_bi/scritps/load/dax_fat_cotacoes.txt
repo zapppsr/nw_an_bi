@@ -1,0 +1,43 @@
+-- Tabela refinada. Tratada em DAX com fonteraw gerada em Power Query
+
+fat_cotacoes = 
+VAR Base = 
+SELECTCOLUMNS (
+    raw_cotacoes_bolsa,
+    "dt_pregao", raw_cotacoes_bolsa[dt_pregao],
+    "cd_acao_rdz", raw_cotacoes_bolsa[cd_acao_rdz],
+    "cd_acao", raw_cotacoes_bolsa[cd_acao],
+    "cd_bdi", raw_cotacoes_bolsa[cd_bdi],
+    "tp_merc", raw_cotacoes_bolsa[tp_merc],
+    "nm_empresa_rdz", raw_cotacoes_bolsa[nm_empresa_rdz],
+    "ds_especi", raw_cotacoes_bolsa[especi],
+    "vl_abertura", raw_cotacoes_bolsa[vl_abertura],
+    "vl_maximo", raw_cotacoes_bolsa[vl_maximo],
+    "vl_minimo", raw_cotacoes_bolsa[vl_minimo],
+    "vl_medio", raw_cotacoes_bolsa[vl_medio],
+    "vl_fechamento", raw_cotacoes_bolsa[vl_fechamento],
+    "vl_mlh_oft_compra", raw_cotacoes_bolsa[vl_mlh_oft_compra],
+    "vl_mlh_oft_venda", raw_cotacoes_bolsa[vl_mlh_oft_venda],
+    
+    "pct_spread", 
+        VAR MOC = raw_cotacoes_bolsa[vl_mlh_oft_compra]
+        VAR MOV = raw_cotacoes_bolsa[vl_mlh_oft_venda]
+        VAR MID = DIVIDE(MOC+MOV,2)
+    RETURN
+        DIVIDE(MOV-MOC,MID),
+
+    "vl_ttl_neg", raw_cotacoes_bolsa[vl_ttl_neg],
+    "qt_tit_neg", raw_cotacoes_bolsa[qt_tit_neg],
+    "vl_volume", raw_cotacoes_bolsa[vl_volume],
+    "vl_exec_opc", raw_cotacoes_bolsa[vl_exec_opc],
+    "in_opc", raw_cotacoes_bolsa[in_opc],
+    "dt_vnct_opc", raw_cotacoes_bolsa[dt_vnct_opc],
+    "ft_cotacao", raw_cotacoes_bolsa[ft_cotacao],
+    "cd_isin", raw_cotacoes_bolsa[cd_isin]
+)
+
+VAR Chaves = DISTINCT(raw_empresas_bolsa[cd_acao_rdz]) -- Trazer apenas linhas que tenham chaves na tabela de empresas
+
+RETURN
+
+FILTER(Base,[cd_acao_rdz] IN Chaves)

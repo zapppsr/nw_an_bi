@@ -1,0 +1,36 @@
+-- Tabela auxiliar criada em DAX
+
+dim_indicadores = 
+ADDCOLUMNS (
+        DATATABLE (
+        "nm_indicador", STRING,
+        "nm_coluna", STRING,
+        "nr_ordem", INTEGER,
+        "nm_medida", STRING,
+        "emoji", STRING,
+        "nm_grupo", STRING, 
+        "nr_ordem_grupo", INTEGER, 
+        {                   
+            -- Preços Principais (Ordem 1)
+            { "Valor de Abertura", "vl_abertura", 1, "Dec", "📈", "Preços Principais", 1 },
+            { "Valor de Fechamento", "vl_fechamento", 2, "Dec", "🎯", "Preços Principais", 1 },
+            { "Valor Máximo", "vl_maximo", 3, "Dec", "⬆️", "Preços Principais", 1 },
+            { "Valor Mínimo", "vl_minimo", 4, "Dec", "⬇️", "Preços Principais", 1 },
+            { "Valor Médio", "vl_medio", 5, "Dec", "⚖️", "Preços Principais", 1 },
+
+            -- Ofertas (Ordem 2)
+            { "Melhor Oferta de Compra", "vl_mlh_oft_compra", 6, "Dec", "🟢", "Ofertas", 2 },
+            { "Melhor Oferta de Venda", "vl_mlh_oft_venda", 7, "Dec", "🔴", "Ofertas", 2 },
+            
+            -- Volume e Quantidade (Ordem 3)
+            { "Volume Financeiro", "vl_volume", 8, "R$", "💰", "Volume & Quantidade", 3 },
+            { "Total de Negócios", "vl_ttl_neg", 9, "Int", "🔢", "Volume & Quantidade", 3 },
+            { "Quantidade de Títulos Negociados", "qt_tit_neg", 10, "Int", "📊", "Volume & Quantidade", 3 },
+
+            -- Outros (Ordem 4)
+            { "Valor de Exercício da Opção", "vl_exec_opc", 11, "Dec", "⚙️", "Outros", 4 }
+        }
+    ),
+    
+    "nm_indicador_visual", [emoji] & " " & [nm_indicador]
+)

@@ -1,0 +1,32 @@
+-- Tabela refinada. Tratada em DAX com fonte raw gerada em Power Query
+
+fat_empresas = 
+VAR Base =
+    SELECTCOLUMNS (
+        raw_df_empresas,
+        "cnpj", CONVERT ( raw_df_empresas[cnpj], STRING ),
+        "cd_cnae_principal", raw_df_empresas[cd_cnae_principal],
+        "de_cnae_principal", raw_df_empresas[de_cnae_principal],
+        "de_ramo_atividade", raw_df_empresas[de_ramo_atividade],
+        "de_setor", raw_df_empresas[de_setor],
+        "dt_abertura", raw_df_empresas[dt_abertura],
+        "ds_endereco_cep", raw_df_empresas[endereco_cep],
+        "ds_endereco_mesorregiao", raw_df_empresas[endereco_mesorregiao],
+        "ds_endereco_municipio", raw_df_empresas[endereco_municipio],
+        "ds_endereco_regiao", raw_df_empresas[endereco_regiao],
+        "ds_endereco_uf", raw_df_empresas[endereco_uf],
+        "fl_matriz_empresa", raw_df_empresas[matriz.empresaMatriz],
+        "ds_situacao_cadastral", raw_df_empresas[situacao_cadastral]
+    )
+RETURN
+    ADDCOLUMNS (
+        Base,
+        "fl_bolsa",
+            VAR Valor =
+                LOOKUPVALUE (
+                    raw_empresas_bolsa[tx_cnpj_clean],
+                    raw_empresas_bolsa[tx_cnpj_clean], [cnpj]
+                )
+            RETURN
+                SWITCH ( TRUE (), ISBLANK ( valor ), "Não", "Sim" )
+    )
