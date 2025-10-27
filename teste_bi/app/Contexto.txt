@@ -1,0 +1,5 @@
+Estão disponibilizados aqui:
+- Arquivo (pbix) contendo a solução em BI completa.
+- PDF com descrição de como foi o processo de elaboração.
+
+Importante: Recomendamos ativar os Recursos de "Visualização" (Preview) do Power BI conforme anexo do PDF para garantir compatibildiade ao abrir o arquivo. Recomendamos também usar a mesma versão (última disponível) do Power BI Desktop.
