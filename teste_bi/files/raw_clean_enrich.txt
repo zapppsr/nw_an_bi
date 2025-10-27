@@ -1,1 +1,1 @@
-
+Conforme conversado na entrevista, o processo foi feito diretamente na ferramenta de BI, não gerando arquivos adicionais externos.
